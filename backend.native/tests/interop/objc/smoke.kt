@@ -18,6 +18,7 @@ fun run() {
     testTypeOps()
     testConversions()
     testWeakRefs()
+    testExceptions()
 
     assertEquals(2, ForwardDeclaredEnum.TWO.value)
 
@@ -185,7 +186,7 @@ fun testMethodsOfAny(kotlinObject: Any, equalNsObject: NSObject, otherObject: An
 }
 
 fun testWeakRefs() {
-    testWeakReference({ NSObject.new()!! })
+    testWeakReference({ createNSObject()!! })
 
     createAndAbandonWeakRef(NSObject())
 
@@ -212,6 +213,16 @@ fun createWeakReference(block: () -> NSObject) = WeakReference(block())
 fun createAndAbandonWeakRef(obj: NSObject) {
     WeakReference(obj)
 }
+
+fun testExceptions() {
+    assertFailsWith<MyException> {
+        BlockCaller.callBlock {
+            throw MyException()
+        }
+    }
+}
+
+private class MyException : Throwable()
 
 fun nsArrayOf(vararg elements: Any): NSArray = NSMutableArray().apply {
     elements.forEach {

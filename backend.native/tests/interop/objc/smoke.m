@@ -76,3 +76,9 @@ BOOL unexpectedDeallocation = NO;
   unexpectedDeallocation = YES;
 }
 @end;
+
+@implementation BlockCaller
++(void)callBlock:(void (^)(void))block {
+    block();
+}
+@end;

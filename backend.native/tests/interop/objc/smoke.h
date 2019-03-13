@@ -114,3 +114,11 @@ void useCustomRetainMethods(id<CustomRetainMethods> p) {
   [p consume:p];
   [p consumeSelf];
 }
+
+NSObject* createNSObject() {
+  return [NSObject new];
+}
+
+@interface BlockCaller : NSObject
++(void)callBlock:(void (^)(void))block;
+@end;
