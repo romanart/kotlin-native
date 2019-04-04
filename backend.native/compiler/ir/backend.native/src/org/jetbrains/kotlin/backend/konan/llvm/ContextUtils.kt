@@ -9,8 +9,10 @@ import kotlinx.cinterop.*
 import llvm.*
 import org.jetbrains.kotlin.backend.konan.Context
 import org.jetbrains.kotlin.backend.konan.hash.GlobalHash
+import org.jetbrains.kotlin.backend.konan.ir.fqNameSafe
 import org.jetbrains.kotlin.backend.konan.ir.isReal
 import org.jetbrains.kotlin.backend.konan.ir.llvmSymbolOrigin
+import org.jetbrains.kotlin.backend.konan.ir.name
 import org.jetbrains.kotlin.descriptors.konan.CompiledKonanModuleOrigin
 import org.jetbrains.kotlin.descriptors.konan.CurrentKonanModuleOrigin
 import org.jetbrains.kotlin.descriptors.konan.DeserializedKonanModuleOrigin
@@ -150,6 +152,9 @@ internal interface ContextUtils : RuntimeAware {
      * It may be declared as external function prototype.
      */
     val IrFunction.llvmFunction: LLVMValueRef
+    get() = llvmFunctionOrNull ?: error("$name in ${parent.fqNameSafe}")
+
+    val IrFunction.llvmFunctionOrNull: LLVMValueRef?
         get() {
             assert(this.isReal)
 
@@ -157,7 +162,7 @@ internal interface ContextUtils : RuntimeAware {
                 context.llvm.externalFunction(this.symbolName, getLlvmFunctionType(this),
                         origin = this.llvmSymbolOrigin)
             } else {
-                context.llvmDeclarations.forFunction(this).llvmFunction
+                context.llvmDeclarations.forFunction(this)?.llvmFunction
             }
         }
 
