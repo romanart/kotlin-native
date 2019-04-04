@@ -1389,8 +1389,7 @@ internal object Devirtualization {
                                                 type             = coercion.type,
                                                 symbol           = newSymbol,
                                                 origin           = origin,
-                                                statements       = statements,
-                                                sourceFileSymbol = sourceFileSymbol)
+                                                statements       = statements)
                                     }
                                     transformedReturnableBlock.transformChildrenVoid(object: IrElementTransformerVoid() {
                                         override fun visitExpression(expression: IrExpression): IrExpression {
