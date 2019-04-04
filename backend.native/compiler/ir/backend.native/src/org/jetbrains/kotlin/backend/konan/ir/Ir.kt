@@ -116,7 +116,6 @@ internal class KonanIr(context: Context, irModule: IrModuleFragment): Ir<Context
 }
 
 internal class KonanSymbols(context: Context, val symbolTable: SymbolTable, val lazySymbolTable: ReferenceSymbolTable): Symbols<Context>(context, lazySymbolTable) {
-
     private val isInitializedPropertyDescriptor = builtInsPackage("kotlin")
             .getContributedVariables(Name.identifier("isInitialized"), NoLookupLocation.FROM_BACKEND).single {
                 it.extensionReceiverParameter.let {
@@ -381,6 +380,8 @@ internal class KonanSymbols(context: Context, val symbolTable: SymbolTable, val 
                     .single { it.extensionReceiverParameter?.type == builtIns.nullableAnyType})
 
     val getContinuation = internalFunction("getContinuation")
+    override val continuationGetter: IrSimpleFunctionSymbol
+        get() = getContinuation
 
     val returnIfSuspended = internalFunction("returnIfSuspended")
 

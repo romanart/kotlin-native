@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.builtins.konan.KonanBuiltIns
 import org.jetbrains.kotlin.ir.builders.IrBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.declarations.IrDeclaration
+import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
 abstract internal class KonanBackendContext(val config: KonanConfig) : CommonBackendContext {
@@ -52,6 +53,8 @@ abstract internal class KonanBackendContext(val config: KonanConfig) : CommonBac
                 message, location
         )
     }
+
+    override val internalPackageFqn = KonanFqNames.internalPackageName
 
 }
 
