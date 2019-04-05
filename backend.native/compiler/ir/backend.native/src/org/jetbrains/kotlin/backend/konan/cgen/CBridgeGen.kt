@@ -1234,13 +1234,13 @@ private class ObjCBlockPointerValuePassing(
             }
             append(" }")
         }
-        val result = "({ id $kotlinFunctionHolder = $expression; $block; })"
-
-        return if (retained) {
-            "(__bridge id)(__bridge_retained void*)$result" // Retain and convert to id.
+        val blockAsId = if (retained) {
+            "(__bridge id)(__bridge_retained void*)$block" // Retain and convert to id.
         } else {
-            result
+            "(id)$block"
         }
+
+        return "({ id $kotlinFunctionHolder = $expression; $kotlinFunctionHolder ? $blockAsId : (id)0; })"
     }
 
     override fun cToBridged(expression: String) = expression

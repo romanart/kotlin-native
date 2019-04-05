@@ -107,6 +107,7 @@ internal class InteropLoweringPart1(val context: Context) : BaseInteropIrTransfo
         get() = currentFile
 
     override fun addTopLevel(declaration: IrDeclaration) {
+        declaration.parent = currentFile
         newTopLevelDeclarations += declaration
     }
 
@@ -823,6 +824,7 @@ private class InteropTransformer(val context: Context, override val irFile: IrFi
     val symbols = context.ir.symbols
 
     override fun addTopLevel(declaration: IrDeclaration) {
+        declaration.parent = irFile
         newTopLevelDeclarations += declaration
     }
 

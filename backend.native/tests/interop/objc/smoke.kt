@@ -19,6 +19,8 @@ fun run() {
     testConversions()
     testWeakRefs()
     testExceptions()
+    testBlocks()
+    testCustomRetain()
 
     assertEquals(2, ForwardDeclaredEnum.TWO.value)
 
@@ -88,24 +90,6 @@ fun run() {
     createObjectWithFactory(object : NSObject(), ObjectFactoryProtocol {
         override fun create() = autoreleasepool { NSObject() }
     })
-
-    assertEquals(222, callProvidedBlock(object : NSObject(), BlockProviderProtocol {
-        override fun block(): (Int) -> Int = { it * 2 }
-    }, 111))
-
-    assertEquals(322, callPlusOneBlock(object : NSObject(), BlockConsumerProtocol {
-        override fun callBlock(block: ((Int) -> Int)?, argument: Int) = block!!(argument)
-    }, 321))
-
-    autoreleasepool {
-        useCustomRetainMethods(object : Foo(), CustomRetainMethodsProtocol {
-            override fun returnRetained(obj: Any?) = obj
-            override fun consume(obj: Any?) {}
-            override fun consumeSelf() {}
-        })
-    }
-
-    assertFalse(unexpectedDeallocation)
 
 }
 
@@ -216,10 +200,58 @@ fun createAndAbandonWeakRef(obj: NSObject) {
 
 fun testExceptions() {
     assertFailsWith<MyException> {
-        BlockCaller.callBlock {
-            throw MyException()
+        ExceptionThrowerManager.throwExceptionWith(object : NSObject(), ExceptionThrowerProtocol {
+            override fun throwException() {
+                throw MyException()
+            }
+        })
+    }
+}
+
+fun testBlocks() {
+    assertTrue(Blocks.blockIsNull(null))
+    assertFalse(Blocks.blockIsNull({}))
+
+    assertEquals(null, Blocks.nullBlock)
+    assertNotEquals(null, Blocks.notNullBlock)
+
+    assertEquals(10, Blocks.same({ a, b, c, d -> a + b + c + d })!!(1, 2, 3, 4))
+
+    assertEquals(222, callProvidedBlock(object : NSObject(), BlockProviderProtocol {
+        override fun block(): (Int) -> Int = { it * 2 }
+    }, 111))
+
+    assertEquals(322, callPlusOneBlock(object : NSObject(), BlockConsumerProtocol {
+        override fun callBlock(block: ((Int) -> Int)?, argument: Int) = block!!(argument)
+    }, 321))
+}
+
+private lateinit var retainedMustNotBeDeallocated: MustNotBeDeallocated
+
+fun testCustomRetain() {
+    fun test() {
+        useCustomRetainMethods(object : Foo(), CustomRetainMethodsProtocol {
+            override fun returnRetained(obj: Any?) = obj
+            override fun consume(obj: Any?) {}
+            override fun consumeSelf() {}
+            override fun returnRetainedBlock(block: (() -> Unit)?) = block
+        })
+
+        CustomRetainMethodsImpl().let {
+            it.returnRetained(Any())
+            retainedMustNotBeDeallocated = MustNotBeDeallocated() // Retain to detect possible over-release.
+            it.consume(retainedMustNotBeDeallocated)
+            it.consumeSelf()
+            it.returnRetainedBlock({})!!()
         }
     }
+
+    autoreleasepool {
+        test()
+        kotlin.native.internal.GC.collect()
+    }
+
+    assertFalse(unexpectedDeallocation)
 }
 
 private class MyException : Throwable()

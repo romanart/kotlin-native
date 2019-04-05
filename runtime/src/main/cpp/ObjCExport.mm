@@ -644,7 +644,7 @@ extern "C" ALWAYS_INLINE OBJ_GETTER(Kotlin_Interop_refFromObjC, id obj) {
 }
 
 extern "C" OBJ_GETTER(Kotlin_Interop_CreateObjCObjectHolder, id obj) {
-  RuntimeAssert(obj != nullptr, "");
+  RuntimeAssert(obj != nullptr, "wrapped object must not be null");
   const TypeInfo* typeInfo = theForeignObjCObjectTypeInfo;
   RETURN_RESULT_OF(AllocInstanceWithAssociatedObject, typeInfo, objc_retain(obj));
 }
